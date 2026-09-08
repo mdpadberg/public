@@ -1,0 +1,3 @@
+- Download full packs from: https://ecstrema.github.io/iconify-typst/
+- Go here to search for icons: https://icon-sets.iconify.design/
+- Already downloaded: https://icon-sets.iconify.design/fluent-emoji-flat/

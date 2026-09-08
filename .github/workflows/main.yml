@@ -1,0 +1,45 @@
+name: Build all typst projects and deploy out folder to Github Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    name: deploy to github pages
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v7
+    - name: Build typst projects
+      shell: bash
+      run: |
+        ./typst/util/typst-to-pdf.sh polylux example
+        ./typst/util/touying-to-pdf-and-html.sh example
+        ./typst/util/touying-to-pdf-and-html.sh theme-example
+        ./typst/util/touying-to-pdf-and-html.sh neuralnetwork
+    - name: Copy typst output to www
+      shell: bash
+      run: |
+        cp typst/out/*.pdf www/
+        cp typst/out/*.html www/
+    - name: Setup Pages
+      uses: actions/configure-pages@v6
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v5
+      with:
+        path: 'www'
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v5
