@@ -33,7 +33,7 @@ MAIN_FILE="$TYPST_DIR/touying/$USER_INPUT_PROJECT_NAME/main.typ"
 
 # User should provide valid project name
 if [[ ! " ${AVAILABLE_PROJECTS[*]} " =~ " $USER_INPUT_PROJECT_NAME " ]]; then
-    echo "Error: '$USER_INPUT_PROJECT_NAME' is not a valid project in '$USER_INPUT_PROJECT_NAME'"
+    echo "Error: '$USER_INPUT_PROJECT_NAME' is not a valid project in '$TYPST_DIR/touying'"
     echo "Available projects: ${AVAILABLE_PROJECTS[*]}"
     exit 1
 fi
@@ -63,7 +63,7 @@ docker run --rm \
     --format "html" \
     --font-paths "/files/touying/$USER_INPUT_PROJECT_NAME/theme/fonts" \
     --output "/files/$OUT_DIR/touying-$USER_INPUT_PROJECT_NAME.html"
-echo "Done: $OUT_DIR/$USER_INPUT_PROJECT_NAME.html"
+echo "Done: $OUT_DIR/touying-$USER_INPUT_PROJECT_NAME.html"
 
 echo "Making PDF for project $USER_INPUT_PROJECT_NAME..."
 docker run --rm \
@@ -75,4 +75,4 @@ docker run --rm \
     --format "pdf" \
     --font-paths "/files/touying/$USER_INPUT_PROJECT_NAME/theme/fonts" \
     --output "/files/$OUT_DIR/touying-$USER_INPUT_PROJECT_NAME.pdf"
-echo "Done: $OUT_DIR/$USER_INPUT_PROJECT_NAME.pdf"
+echo "Done: $OUT_DIR/touying-$USER_INPUT_PROJECT_NAME.pdf"
