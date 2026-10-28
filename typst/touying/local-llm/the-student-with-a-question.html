@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The student with a question</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap">
+  <style>
+    /* ---------- Theme ---------- */
+
+    :root {
+      --bg: #f3efe2;
+      --ink: #2b2a33;
+      --line: #2b2a33;
+      --card: #fffdf6;
+      --accent: #c2410c;
+      --grass: #cfe3c0;
+      --office: #ecd0a4;
+      --library: #cfd6f2;
+      --workroom: #bfe8ef;
+      --faculty: #f4e3a1;
+
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    /* The dark palette is repeated: once for the system setting, once for an explicit choice. */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #1a1a1a;
+        --ink: #eee9da;
+        --line: #eee9da;
+        --card: #1a1a1a;
+        --accent: #fb923c;
+        --grass: #2d4a3a;
+        --office: #5a4430;
+        --library: #363d66;
+        --workroom: #25596a;
+        --faculty: #5b4f1f;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #1a1a1a;
+      --ink: #eee9da;
+      --line: #eee9da;
+      --card: #1a1a1a;
+      --accent: #fb923c;
+      --grass: #2d4a3a;
+      --office: #5a4430;
+      --library: #363d66;
+      --workroom: #25596a;
+      --faculty: #5b4f1f;
+    }
+
+    /* ---------- Page ---------- */
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Pixelify Sans", ui-monospace, Menlo, monospace;
+    }
+
+    body {
+      min-height: 100%;
+      padding: 16px;
+    }
+
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: clamp(20px, 4vw, 30px);
+      margin: 4px 0 12px;
+      font-weight: 600;
+    }
+
+    /* ---------- Layout ---------- */
+
+    #stage {
+      position: relative;
+      width: min(100%, calc((100vh - 24rem - 54px) * 1.6));
+      margin: 0 auto;
+      aspect-ratio: 16 / 10;
+      min-height: 200px;
+      background: var(--grass);
+      border: 3px solid var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    /* Wide screens: stage on top, caption and legend below, controls on the right. */
+    @media (min-width: 700px) {
+      main {
+        max-width: 1200px;
+      }
+
+      #layout {
+        display: grid;
+        grid-template-columns: 980px 180px;
+        grid-template-rows: auto auto auto;
+        grid-template-areas:
+          "stage   ."
+          "caption controls"
+          "legend  controls";
+        column-gap: 24px;
+        row-gap: 12px;
+        justify-content: center;
+        align-items: start;
+      }
+
+      #layout #stage {
+        grid-area: stage;
+        width: 100%;
+        height: min(612.5px, calc(100vh - 21rem));
+        margin: 0;
+      }
+
+      #layout #caption {
+        grid-area: caption;
+        margin-top: 0;
+        height: 86px;
+      }
+
+      #layout #controls {
+        grid-area: controls;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0;
+      }
+
+      #layout #legend {
+        grid-area: legend;
+        margin-top: 0;
+        height: 140px;
+      }
+
+      #layout #counter {
+        margin-left: 0;
+        text-align: center;
+      }
+    }
+
+    /* ---------- Rooms on the stage ---------- */
+
+    .zone {
+      display: flex;
+      align-items: flex-end;
+      position: absolute;
+      border: 3px solid var(--line);
+      border-radius: 4px;
+      font-size: clamp(9px, 1.6vw, 14px);
+      padding: 4px 6px;
+      line-height: 1.15;
+      transition: opacity 0.4s;
+    }
+
+    #faculty {
+      left: 44%;
+      top: 4%;
+      width: 54%;
+      height: 42%;
+      background: var(--faculty);
+    }
+
+    #office {
+      left: 64%;
+      top: 4%;
+      width: 34%;
+      height: 42%;
+      background: var(--office);
+    }
+
+    #library {
+      left: 64%;
+      top: 54%;
+      width: 34%;
+      height: 42%;
+      background: var(--library);
+    }
+
+    #workroom {
+      left: 22%;
+      top: 12%;
+      width: 36%;
+      height: 76%;
+      background: var(--workroom);
+      border-style: dashed;
+      opacity: 0.9;
+    }
+
+    /* ---------- Characters and items on the stage ---------- */
+
+    /* Sprites are centred on their left/top position, which moves between steps. */
+    .sprite {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      font-size: clamp(26px, 5.4vw, 52px);
+      line-height: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: left 1.1s ease-in-out, top 1.1s ease-in-out, opacity 0.4s;
+      z-index: 3;
+      user-select: none;
+    }
+
+    .sprite--small {
+      font-size: clamp(20px, 4vw, 38px);
+    }
+
+    .label {
+      font-size: clamp(9px, 1.5vw, 13px);
+      font-weight: 600;
+      line-height: 1.2;
+      background: var(--card);
+      border: 2px solid var(--line);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-bottom: 3px;
+      white-space: nowrap;
+    }
+
+    #student     { left: 9%;  top: 50%; }
+    #professor   { left: 55%; top: 22%; }
+    #colleague-b { left: 71%; top: 22%; }
+    #colleague-c { left: 87%; top: 22%; }
+    #internet    { left: 88%; top: 78%; }
+    #guard       { left: 58%; top: 50%; }
+    #assistant   { left: 40%; top: 50%; }
+
+    /* Hidden elements fade out instead of disappearing, so they can be animated. */
+    .is-hidden,
+    #workroom.is-hidden {
+      opacity: 0;
+    }
+
+    #guard.is-pulsing {
+      animation: pulse 0.8s ease-in-out 3;
+    }
+
+    @keyframes pulse {
+      50% {
+        transform: translate(-50%, -50%) scale(1.35);
+      }
+    }
+
+    /* ---------- Caption, controls and legend ---------- */
+
+    #caption {
+      margin-top: 12px;
+      background: var(--card);
+      border: 3px solid var(--line);
+      border-radius: 6px;
+      padding: 12px 14px;
+      min-height: 78px;
+      font-size: clamp(15px, 2.6vw, 20px);
+      line-height: 1.35;
+    }
+
+    #controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font: inherit;
+      font-size: 16px;
+      color: var(--ink);
+      background: var(--card);
+      border: 3px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    button:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    #counter {
+      margin-left: auto;
+      font-size: 15px;
+    }
+
+    #legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 6px 18px;
+      margin: 12px 0 0;
+      background: var(--card);
+      border: 3px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: clamp(14px, 2.2vw, 17px);
+    }
+
+    #legend div {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #legend div[hidden] {
+      display: none;
+    }
+
+    .legend-icon {
+      width: 26px;
+      text-align: center;
+      flex: none;
+    }
+
+    .swatch {
+      display: inline-block;
+      width: 20px;
+      height: 16px;
+      border: 2px solid var(--line);
+      border-radius: 3px;
+      margin: 0 3px;
+      flex: none;
+    }
+
+    .swatch--faculty  { background: var(--faculty); }
+    .swatch--office   { background: var(--office); }
+    .swatch--library  { background: var(--library); }
+    .swatch--workroom { background: var(--workroom); border-style: dashed; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sprite,
+      .zone {
+        transition: none;
+      }
+
+      #guard.is-pulsing {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>The student with a question</h1>
+
+    <div id="layout">
+      <div id="stage" role="img" aria-label="Animated story: a student picks a professor at the faculty, the professor gets an office, and an assistant in a guarded workroom carries messages and searches the internet for them">
+        <!-- Rooms -->
+        <div class="zone is-hidden" id="workroom">Workroom</div>
+        <div class="zone is-hidden" id="faculty">The faculty</div>
+        <div class="zone is-hidden" id="office">Office</div>
+        <div class="zone is-hidden" id="library">Library</div>
+
+        <!-- Characters -->
+        <div class="sprite" id="student"><b class="label">Student</b>🧑‍🎓</div>
+        <div class="sprite is-hidden" id="professor"><b class="label" id="professor-label">Professor</b>👨‍🏫</div>
+        <div class="sprite is-hidden" id="colleague-b"><b class="label">Prof. B</b>👨‍🏫</div>
+        <div class="sprite is-hidden" id="colleague-c"><b class="label">Prof. C</b>👨‍🏫</div>
+        <div class="sprite is-hidden" id="internet"><b class="label">Internet</b>🌐</div>
+        <div class="sprite sprite--small is-hidden" id="guard"><b class="label">Guarded door</b>🛡️</div>
+        <div class="sprite is-hidden" id="assistant"><b class="label">Assistant</b>🧑‍💼</div>
+
+        <!-- Items carried around -->
+        <div class="sprite sprite--small is-hidden" id="question">❓</div>
+        <div class="sprite sprite--small is-hidden" id="note">📝</div>
+        <div class="sprite sprite--small is-hidden" id="results">🌐</div>
+        <div class="sprite sprite--small is-hidden" id="answer">💡</div>
+      </div>
+
+      <div id="caption" aria-live="polite"></div>
+
+      <div id="controls">
+        <button type="button" id="back">Back</button><button type="button" id="next">Next</button><button type="button" id="play">Play</button>
+        <span id="counter"></span>
+      </div>
+
+      <!-- Each row is shown only while its element (data-for) is visible on the stage. -->
+      <div id="legend" aria-label="Legend">
+        <div data-for="student"><span class="legend-icon">🧑‍🎓</span>Student = you, the user</div>
+        <div data-for="professor"><span class="legend-icon">👨‍🏫</span>Professor = open weight model</div>
+        <div data-for="faculty"><span class="swatch swatch--faculty"></span>The faculty = community with open models</div>
+        <div data-for="assistant"><span class="legend-icon">🧑‍💼</span>Assistant = coding harness</div>
+        <div data-for="office"><span class="swatch swatch--office"></span>Office = inference engine</div>
+        <div data-for="workroom"><span class="swatch swatch--workroom"></span>Workroom = sandbox</div>
+        <div data-for="library"><span class="swatch swatch--library"></span>Library = where the assistant goes for tools</div>
+        <div data-for="internet"><span class="legend-icon">🌐</span>Internet = the tool (web search)</div>
+        <div data-for="guard"><span class="legend-icon">🛡️</span>Guarded door = what the sandbox allows</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    "use strict";
+
+    (() => {
+      const STEP_DURATION_MS = 3800;
+      const PROFESSOR_IN_OFFICE = [87, 24];
+      const ASSISTANT_IN_WORKROOM = [40, 50];
+      const ASSISTANT_AT_OFFICE = [70, 28];
+      const ASSISTANT_AT_LIBRARY = [70, 76];
+
+      /*
+       * One entry per step of the story. Only what a step lists is on the stage;
+       * the student is always there.
+       *
+       * caption         text shown below the stage
+       * rooms           rooms and fixed things to show: faculty, office, workroom, guard, library, internet
+       * professor       [left %, top %] of the professor; leave it out to hide them
+       * professorLabel  label above the professor (default: "Professor")
+       * colleagues      show the other professors in the faculty
+       * guardPulse      animate the guarded door
+       * assistant, question, note, results, answer
+       *                 [left %, top %] of that character or item; leave it out to hide it
+       */
+      const STEPS = [
+        {
+          caption: "A student has a question: A new planet was discovered today. Could there be life on it?",
+          question: [9, 33],
+        },
+        {
+          caption: "Where do you find a professor who can answer this question? The faculty.",
+          rooms: ["faculty"],
+          professor: [55, 22],
+          professorLabel: "Prof. A",
+          colleagues: true,
+          question: [9, 33],
+        },
+        {
+          caption: "How do you pick the right professor? They differ in their field, their contract, and how much they know.",
+          rooms: ["faculty"],
+          professor: [55, 22],
+          professorLabel: "Prof. A",
+          colleagues: true,
+          question: [9, 33],
+        },
+        {
+          caption: "Now pick the professor you want to talk to.",
+          rooms: ["faculty"],
+          professor: [55, 22],
+          professorLabel: "Your pick",
+          question: [9, 33],
+        },
+        {
+          caption: "The professor needs an office. It loads the knowledge and gives the professor a desk where they can answer questions.",
+          rooms: ["office"],
+          professor: PROFESSOR_IN_OFFICE,
+          question: [9, 33],
+        },
+        {
+          caption: "In the office, the professor can only think and talk. The professor never leaves the office.",
+          rooms: ["office"],
+          professor: PROFESSOR_IN_OFFICE,
+          question: [9, 33],
+        },
+        {
+          caption: "That's where the assistant comes in. The assistant does what the professor can't: carry messages, fetch things and use tools.",
+          rooms: ["office"],
+          professor: PROFESSOR_IN_OFFICE,
+          assistant: [32, 50],
+          question: [9, 33],
+        },
+        {
+          caption: "For security reasons, we can't give the assistant unlimited access to messages, tools and files.",
+          rooms: ["office"],
+          professor: PROFESSOR_IN_OFFICE,
+          assistant: [32, 50],
+          question: [9, 33],
+        },
+        {
+          caption: "So we give the assistant their own workroom.",
+          rooms: ["office", "workroom"],
+          professor: PROFESSOR_IN_OFFICE,
+          assistant: ASSISTANT_IN_WORKROOM,
+          question: [9, 33],
+        },
+        {
+          caption: "The student gives the question to the assistant. The student never talks to the professor directly.",
+          rooms: ["office", "workroom"],
+          professor: PROFESSOR_IN_OFFICE,
+          assistant: ASSISTANT_IN_WORKROOM,
+          question: [40, 33],
+        },
+        {
+          caption: "The assistant carries the question to the office.",
+          rooms: ["office", "workroom"],
+          professor: PROFESSOR_IN_OFFICE,
+          assistant: ASSISTANT_AT_OFFICE,
+          question: [79, 30],
+        },
+        {
+          caption: "The planet is newer than the professor's studies, so the professor writes a note: \"I need to look this up on the internet.\"",
+          rooms: ["office", "workroom"],
+          professor: PROFESSOR_IN_OFFICE,
+          assistant: ASSISTANT_AT_OFFICE,
+          note: [79, 30],
+        },
+        {
+          caption: "The assistant takes the note back to the workroom and checks at the guarded door whether they are allowed to use the internet.",
+          rooms: ["office", "workroom", "guard"],
+          professor: PROFESSOR_IN_OFFICE,
+          guardPulse: true,
+          assistant: [48, 50],
+          note: [48, 34],
+        },
+        {
+          caption: "The workroom only opens the doors you approved. Web search is allowed, so the assistant goes to the library to use the internet.",
+          rooms: ["office", "workroom", "guard", "library", "internet"],
+          professor: PROFESSOR_IN_OFFICE,
+          guardPulse: true,
+          assistant: ASSISTANT_AT_LIBRARY,
+          note: [79, 68],
+        },
+        {
+          caption: "The assistant fetches the results from the internet with a web search.",
+          rooms: ["office", "workroom", "guard", "library", "internet"],
+          professor: PROFESSOR_IN_OFFICE,
+          assistant: ASSISTANT_AT_LIBRARY,
+          results: [79, 68],
+        },
+        {
+          caption: "The assistant brings the results back to the professor's office, but doesn't read them.",
+          rooms: ["office", "workroom", "guard", "library", "internet"],
+          professor: PROFESSOR_IN_OFFICE,
+          assistant: ASSISTANT_AT_OFFICE,
+          results: [79, 36],
+        },
+        {
+          caption: "The professor reads the results, interprets them and writes the answer.",
+          rooms: ["office", "workroom", "guard", "library", "internet"],
+          professor: PROFESSOR_IN_OFFICE,
+          assistant: ASSISTANT_AT_OFFICE,
+          results: [79, 36],
+          answer: [79, 20],
+        },
+        {
+          caption: "The assistant carries the answer back to the student.",
+          rooms: ["office", "workroom", "guard", "library", "internet"],
+          professor: PROFESSOR_IN_OFFICE,
+          assistant: [26, 50],
+          answer: [26, 33],
+        },
+        {
+          caption: "Answer to the student: \"There's no sign of life yet, but there has been a lot of news about potentially habitable planets in the past few months.\"",
+          rooms: ["office", "workroom", "guard", "library", "internet"],
+          professor: PROFESSOR_IN_OFFICE,
+          assistant: ASSISTANT_IN_WORKROOM,
+          answer: [9, 33],
+        },
+        {
+          caption: "The student has an answer. The professor has the knowledge, the assistant has the hands.",
+          rooms: ["office", "workroom", "guard", "library", "internet"],
+          professor: PROFESSOR_IN_OFFICE,
+          assistant: ASSISTANT_IN_WORKROOM,
+          answer: [9, 33],
+        },
+      ];
+
+      const ROOMS = ["faculty", "office", "workroom", "guard", "library", "internet"];
+      const MOVABLE = ["professor", "assistant", "question", "note", "results", "answer"];
+
+      const $ = (id) => document.getElementById(id);
+
+      const playButton = $("play");
+      const guard = $("guard");
+
+      let current = 0;
+      let timer = null;
+
+      function moveTo(element, [left, top]) {
+        element.style.left = `${left}%`;
+        element.style.top = `${top}%`;
+      }
+
+      // Something that was hidden appears at its new place; only visible things walk there.
+      function appearAt(element, position) {
+        element.style.transition = "none";
+        moveTo(element, position);
+        void element.offsetWidth; // apply the jump before the transition is restored
+        element.style.transition = "";
+      }
+
+      function setVisible(element, visible) {
+        element.classList.toggle("is-hidden", !visible);
+      }
+
+      // Restart the pulse animation, even when the previous step pulsed too.
+      function pulseGuard(on) {
+        guard.classList.remove("is-pulsing");
+        if (on) {
+          void guard.offsetWidth; // force a reflow so the animation starts over
+          guard.classList.add("is-pulsing");
+        }
+      }
+
+      function render(index) {
+        current = Math.max(0, Math.min(STEPS.length - 1, index));
+        const step = STEPS[current];
+        const rooms = step.rooms ?? [];
+
+        for (const id of ROOMS) {
+          setVisible($(id), rooms.includes(id));
+        }
+
+        for (const id of MOVABLE) {
+          const element = $(id);
+          const position = step[id];
+          if (position && element.classList.contains("is-hidden")) appearAt(element, position);
+          else if (position) moveTo(element, position);
+          setVisible(element, Boolean(position));
+        }
+
+        $("professor-label").textContent = step.professorLabel ?? "Professor";
+        setVisible($("colleague-b"), Boolean(step.colleagues));
+        setVisible($("colleague-c"), Boolean(step.colleagues));
+
+        for (const row of $("legend").children) {
+          row.hidden = $(row.dataset.for).classList.contains("is-hidden");
+        }
+
+        pulseGuard(Boolean(step.guardPulse));
+
+        $("caption").textContent = step.caption;
+        $("counter").textContent = `${current + 1} / ${STEPS.length}`;
+      }
+
+      const isLastStep = () => current >= STEPS.length - 1;
+
+      function stop() {
+        clearTimeout(timer);
+        timer = null;
+        playButton.textContent = "Play";
+      }
+
+      function playNext() {
+        if (isLastStep()) {
+          stop();
+          return;
+        }
+        render(current + 1);
+        timer = setTimeout(playNext, STEP_DURATION_MS);
+      }
+
+      function play() {
+        if (isLastStep()) render(0);
+        playButton.textContent = "Pause";
+        timer = setTimeout(playNext, STEP_DURATION_MS);
+      }
+
+      function goTo(index) {
+        stop();
+        render(index);
+      }
+
+      $("next").addEventListener("click", () => goTo(current + 1));
+      $("back").addEventListener("click", () => goTo(current - 1));
+      playButton.addEventListener("click", () => (timer ? stop() : play()));
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowRight") goTo(current + 1);
+        else if (event.key === "ArrowLeft") goTo(current - 1);
+      });
+
+      render(0);
+    })();
+  </script>
+</body>
+</html>
