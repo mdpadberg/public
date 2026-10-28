@@ -4,6 +4,7 @@ GitHub Pages site for Typst presentations and personal projects.
 
 ## My content
 
+- 2026-10-29 — Mike Padberg — Run LLMs Locally: The Complete Local Setup Guide — [html ](https://mdpadberg.github.io/public/touying-local-llm.html) / [ pdf](https://mdpadberg.github.io/public/touying-local-llm.pdf) / [ the-student-with-a-question](https://mdpadberg.github.io/public/the-student-with-a-question.html)
 - 2024-02-26 — Mike Padberg — Under the Hood of Neural Networks — [html ](https://mdpadberg.github.io/public/touying-neuralnetwork.html) / [ pdf](https://mdpadberg.github.io/public/touying-neuralnetwork.pdf)
 - [Dyslexia experience](https://mdpadberg.github.io/public/dyslexia.html) — how dyslexia feels for me
 

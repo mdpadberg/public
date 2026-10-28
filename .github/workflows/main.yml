@@ -29,6 +29,7 @@ jobs:
         ./typst/util/touying-to-pdf-and-html.sh example
         ./typst/util/touying-to-pdf-and-html.sh theme-example
         ./typst/util/touying-to-pdf-and-html.sh neuralnetwork
+        ./typst/util/touying-to-pdf-and-html.sh local-llm
     - name: Copy typst output to www
       shell: bash
       run: |
