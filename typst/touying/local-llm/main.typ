@@ -1622,17 +1622,27 @@
     box(width: 1000 * px, height: 775 * px, clip: true,
       place(top + left, dx: -155 * px, dy: -15 * px, image("images/story.gif", width: 1521 * px))),
     align(left)[
-      #text(weight: "bold", size: 30pt)[Any \ questions?]
-      #v(10pt)
+      #text(weight: "bold", size: 34pt)[Any questions?]
+      #v(6pt)
       #line(length: 2.5cm, stroke: 2pt + rgb("#ffffff"))
-      #v(10pt)
-      #text(size: 12pt, fill: gray)[Slides of this talk:]
-      #v(-4pt)
-      #qrcode("https://mdpadberg.github.io/public/touying-local-llm.html", width: 3.4cm, options: (
-        bg-color: rgb("#1a1a1a"),
-        fg-color: rgb("#ffffff")
-      ))
-      #link("https://mdpadberg.github.io/public/touying-local-llm.html")[#text(size: 9pt, fill: gray)[https://mdpadberg.github.io/public/touying-local-llm.html]]
+      #v(16pt)
+      #let resource(label, url) = grid(
+        columns: (2.8cm, 1fr), column-gutter: 16pt, align: horizon,
+        qrcode(url, width: 2.8cm, options: (
+          bg-color: rgb("#1a1a1a"),
+          fg-color: rgb("#ffffff")
+        )),
+        stack(spacing: 5pt,
+          text(weight: "bold", size: 16pt)[#label],
+          // zero-width spaces after "/" let the long URL wrap
+          link(url)[#text(size: 10pt, fill: gray)[#url.replace("/", "/\u{200B}")]],
+        ),
+      )
+      #stack(spacing: 16pt,
+        resource([Slides], "https://mdpadberg.github.io/public/touying-local-llm.html"),
+        resource([Code], "https://github.com/mdpadberg/public/blob/main/typst/touying/local-llm/main.typ"),
+      )
     ],
   )
 ]
+
